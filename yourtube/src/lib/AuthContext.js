@@ -27,17 +27,44 @@ export const UserProvider = ({ children }) => {
     try {
       const result = await signInWithPopup(auth, provider);
       const firebaseuser = result.user;
+
+      if (!firebaseuser.email) {
+        throw new Error("Google did not return email");
+      }
+
       const payload = {
         email: firebaseuser.email,
         name: firebaseuser.displayName,
         image: firebaseuser.photoURL || "https://github.com/shadcn.png",
       };
+
       const response = await axiosInstance.post("/user/login", payload);
-      login(response.data.result);
+
+      console.log("BACKEND RESPONSE:", response.data); // 👈 DEBUG
+
+      login(response.data.result || response.data.user);
     } catch (error) {
-      console.error(error);
+      console.error(
+        "GOOGLE LOGIN ERROR:",
+        error.response?.data || error.message,
+      );
     }
   };
+  // const handlegooglesignin = async () => {
+  //   try {
+  //     const result = await signInWithPopup(auth, provider);
+  //     const firebaseuser = result.user;
+  //     const payload = {
+  //       email: firebaseuser.email,
+  //       name: firebaseuser.displayName,
+  //       image: firebaseuser.photoURL || "https://github.com/shadcn.png",
+  //     };
+  //     const response = await axiosInstance.post("/user/login", payload);
+  //     login(response.data.result);
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+  // };
   useEffect(() => {
     const unsubcribe = onAuthStateChanged(auth, async (firebaseuser) => {
       if (firebaseuser) {
