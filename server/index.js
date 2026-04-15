@@ -9,6 +9,8 @@ import likeroutes from "./routes/like.js";
 import watchlaterroutes from "./routes/watchlater.js";
 import historyrroutes from "./routes/history.js";
 import commentroutes from "./routes/comment.js";
+
+
 dotenv.config();
 const app = express();
 import path from "path";

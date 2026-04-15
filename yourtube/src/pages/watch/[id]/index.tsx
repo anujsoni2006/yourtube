@@ -35,7 +35,7 @@ const index = () => {
   //     videotitle: "Amazing Nature Documentary",
   //     filename: "nature-doc.mp4",
   //     filetype: "video/mp4",
-  //     filepath: "/videos/nature-doc.mp4",
+  //     videoUrl: "/videos/nature-doc.mp4",
   //     filesize: "500MB",
   //     videochanel: "Nature Channel",
   //     Like: 1250,
@@ -49,7 +49,7 @@ const index = () => {
   //     videotitle: "Cooking Tutorial: Perfect Pasta",
   //     filename: "pasta-tutorial.mp4",
   //     filetype: "video/mp4",
-  //     filepath: "/videos/pasta-tutorial.mp4",
+  //     videoUrl: "/videos/pasta-tutorial.mp4",
   //     filesize: "300MB",
   //     videochanel: "Chef's Kitchen",
   //     Like: 890,
@@ -62,7 +62,7 @@ const index = () => {
   if (loading) {
     return <div>Loading..</div>;
   }
-  
+
   if (!videos) {
     return <div>Video not found</div>;
   }

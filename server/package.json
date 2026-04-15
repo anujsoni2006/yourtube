@@ -13,8 +13,9 @@
   "type": "module",
   "dependencies": {
     "body-parser": "^2.2.0",
+    "cloudinary": "^2.9.0",
     "cors": "^2.8.5",
-    "dotenv": "^16.5.0",
+    "dotenv": "^16.6.1",
     "express": "^5.1.0",
     "express-fileupload": "^1.5.1",
     "firebase": "^12.11.0",

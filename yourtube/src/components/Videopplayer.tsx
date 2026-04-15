@@ -6,7 +6,7 @@ interface VideoPlayerProps {
   video: {
     _id: string;
     videotitle: string;
-    filepath: string;
+    videoUrl: string;
   };
 }
 
@@ -23,7 +23,7 @@ export default function VideoPlayer({ video }: VideoPlayerProps) {
         poster={`/placeholder.svg?height=480&width=854`}
       >
         <source
-          src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/${video?.filepath}`}
+          src={video?.videoUrl}
           type="video/mp4"
         />
         Your browser does not support the video tag.
