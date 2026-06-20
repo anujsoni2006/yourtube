@@ -1,11 +1,9 @@
 import Video from "../Modals/video.js";
 import cloudinary from "../config/cloudinary.js";
 
-
-
 export const getallvideo = async (req, res) => {
   try {
-    const files = await Video.find();
+    const files = await Video.find().populate("channelId", "name channelName image description");
     return res.status(200).send(files);
   } catch (error) {
     console.error(" error:", error);
@@ -35,8 +33,9 @@ export const uploadvideo = async (req, res) => {
       videoUrl: result.secure_url, // ✅ main change
       filetype: req.file.mimetype,
       filesize: req.file.size,
-      videochanel: req.body.videochanel,
+      channelId: req.body.channelId,
       uploader: req.body.uploader,
+      description: req.body.description || "",
     });
 
     await file.save();
@@ -47,29 +46,3 @@ export const uploadvideo = async (req, res) => {
     return res.status(500).json({ message: "Upload failed" });
   }
 };
-// export const uploadvideo = async (req, res) => {
-//   if (req.file === undefined) {
-//     return res
-//       .status(404)
-//       .json({ message: "plz upload a mp4 video file only" });
-//   } else {
-//     try {
-//       const file = new video({
-//         videotitle: req.body.videotitle,
-//         filename: req.file.originalname,
-//         videoUrl: req.file.path,
-//         filetype: req.file.mimetype,
-//         filesize: req.file.size,
-//         videochanel: req.body.videochanel,
-//         uploader: req.body.uploader,
-//       });
-//       await file.save();
-//       return res.status(201).json("file uploaded successfully");
-//     } catch (error) {
-//       console.error(" error:", error);
-//       return res.status(500).json({ message: "Something went wrong" });
-//     }
-//   }
-// };
-
-

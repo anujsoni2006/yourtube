@@ -5,13 +5,15 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Progress } from "./ui/progress";
+import { Textarea } from "./ui/textarea";
 import axiosInstance from "@/lib/axiosinstance";
 
-const VideoUploader = ({ channelId, channelName }: any) => {
+const VideoUploader = ({ channelId, user }: any) => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [videoTitle, setVideoTitle] = useState("");
+  const [videoDescription, setVideoDescription] = useState("");
   const [uploadComplete, setUploadComplete] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const handlefilechange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -36,6 +38,7 @@ const VideoUploader = ({ channelId, channelName }: any) => {
   const resetForm = () => {
     setVideoFile(null);
     setVideoTitle("");
+    setVideoDescription("");
     setIsUploading(false);
     setUploadProgress(0);
     setUploadComplete(false);
@@ -56,19 +59,20 @@ const VideoUploader = ({ channelId, channelName }: any) => {
     const formdata = new FormData();
     formdata.append("file", videoFile);
     formdata.append("videotitle", videoTitle);
-    formdata.append("videochanel", channelName);
-    formdata.append("uploader", channelId);
-    console.log(formdata)
+    formdata.append("description", videoDescription);
+    formdata.append("channelId", channelId);
+    formdata.append("uploader", user?.name);
+    console.log(formdata);
     try {
       setIsUploading(true);
       setUploadProgress(0);
       const res = await axiosInstance.post("/video/upload", formdata, {
-         headers: {
-    "Content-Type": "multipart/form-data", // ✅ MUST for FormData
-  },
+        headers: {
+          "Content-Type": "multipart/form-data", // ✅ MUST for FormData
+        },
         onUploadProgress: (progresEvent: any) => {
           const progress = Math.round(
-            (progresEvent.loaded * 100) / progresEvent.total
+            (progresEvent.loaded * 100) / progresEvent.total,
           );
           setUploadProgress(progress);
         },
@@ -144,6 +148,17 @@ const VideoUploader = ({ channelId, channelName }: any) => {
                   placeholder="Add a title that describes your video"
                   disabled={isUploading || uploadComplete}
                   className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  id="description"
+                  value={videoDescription}
+                  onChange={(e) => setVideoDescription(e.target.value)}
+                  placeholder="Add a description that explains your video"
+                  disabled={isUploading || uploadComplete}
+                  className="mt-1 min-h-[100px] resize-none"
                 />
               </div>
             </div>

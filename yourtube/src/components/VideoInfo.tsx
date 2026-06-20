@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Avatar, AvatarFallback } from "./ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
 import {
   Clock,
@@ -90,25 +90,15 @@ const VideoInfo = ({ video }: any) => {
   };
   const handleDislike = async () => {
     if (!user) return;
-    try {
-      const res = await axiosInstance.post(`/like/${video._id}`, {
-        userId: user?._id,
-      });
-      if (!res.data.liked) {
-        if (isDisliked) {
-          setDislikes((prev: any) => prev - 1);
-          setIsDisliked(false);
-        } else {
-          setDislikes((prev: any) => prev + 1);
-          setIsDisliked(true);
-          if (isLiked) {
-            setlikes((prev: any) => prev - 1);
-            setIsLiked(false);
-          }
-        }
+    if (isDisliked) {
+      setDislikes((prev: any) => prev - 1);
+      setIsDisliked(false);
+    } else {
+      setDislikes((prev: any) => prev + 1);
+      setIsDisliked(true);
+      if (isLiked) {
+        await handleLike();
       }
-    } catch (error) {
-      console.log(error);
     }
   };
   return (
@@ -118,10 +108,11 @@ const VideoInfo = ({ video }: any) => {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Avatar className="w-10 h-10">
-            <AvatarFallback>{video.videochanel[0]}</AvatarFallback>
+            {video.channelId?.image && <AvatarImage src={video.channelId.image} />}
+            <AvatarFallback>{video.uploader?.[0] || "U"}</AvatarFallback>
           </Avatar>
           <div>
-            <h3 className="font-medium">{video.videochanel}</h3>
+            <h3 className="font-medium">{video.channelId?.channelName || video.uploader}</h3>
             <p className="text-sm text-gray-600">1.2M subscribers</p>
           </div>
           <Button className="ml-4">Subscribe</Button>
@@ -198,9 +189,8 @@ const VideoInfo = ({ video }: any) => {
           <span>{formatDistanceToNow(new Date(video.createdAt))} ago</span>
         </div>
         <div className={`text-sm ${showFullDescription ? "" : "line-clamp-3"}`}>
-          <p>
-            Sample video description. This would contain the actual video
-            description from the database.
+          <p className="whitespace-pre-wrap">
+            {video.description || "No description available."}
           </p>
         </div>
         <Button

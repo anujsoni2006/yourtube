@@ -15,7 +15,7 @@ const watchlaterschema = mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 export default mongoose.model("watchlater", watchlaterschema);

@@ -16,66 +16,109 @@ import { useUser } from "@/lib/AuthContext";
 
 const Channeldialogue = ({ isopen, onclose, channeldata, mode }: any) => {
   const { user, login } = useUser();
-  // const user: any = {
-  //   id: "1",
-  //   name: "John Doe",
-  //   email: "john@example.com",
-  //   image: "https://github.com/shadcn.png?height=32&width=32",
-  // };
   const router = useRouter();
+
   const [formData, setFormData] = useState({
     name: "",
     description: "",
   });
+
   const [isSubmitting, setisSubmitting] = useState(false);
+
+  // ✅ Fill form correctly for create/edit mode
   useEffect(() => {
     if (channeldata && mode === "edit") {
       setFormData({
-        name: channeldata.name || "",
+        name:
+          channeldata.channelName ||
+          channeldata.channelname ||
+          channeldata.name ||
+          "",
         description: channeldata.description || "",
       });
     } else {
       setFormData({
-        name: user?.name || "",
-        description: "",
+        name:
+          user?.channelName ||
+          user?.channelname ||
+          user?.name ||
+          "",
+        description: user?.description || "",
       });
     }
-  }, [channeldata]);
+  }, [channeldata, mode, user]);
+
+  // ✅ Handle input changes
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
+
+  // ✅ Create / Update channel
   const handlesubmit = async (e: FormEvent) => {
     e.preventDefault();
-    const payload = {
-      channelname: formData.name,
-      description: formData.description,
-    };
-    const response = await axiosInstance.patch(
-      `/user/update/${user._id}`,
-      payload
-    );
-    login(response?.data);
-    router.push(`/channel/${user?._id}`);
-    setFormData({
-      name: "",
-      description: "",
-    });
-    onclose();
+
+    if (!user?._id) {
+      console.error("User not found");
+      return;
+    }
+
+    try {
+      setisSubmitting(true);
+
+      const payload = {
+        channelName: formData.name.trim(),
+        description: formData.description.trim(),
+      };
+
+      const response = await axiosInstance.patch(
+        `/user/update/${user._id}`,
+        payload
+      );
+
+      // ✅ Updated user from backend
+      const updatedUser = response.data.result;
+
+      // ✅ Refresh AuthContext instantly
+      login(updatedUser);
+
+      // ✅ Reset form
+      setFormData({
+        name: "",
+        description: "",
+      });
+
+      // ✅ Close dialog
+      onclose();
+
+      // ✅ Go to correct channel page
+      await router.replace(`/channel/${updatedUser._id}`);
+    } catch (error) {
+      console.error("Channel update failed:", error);
+    } finally {
+      setisSubmitting(false);
+    }
   };
+
   return (
     <Dialog open={isopen} onOpenChange={onclose}>
       <DialogContent className="sm:max-w-md md:max-w-lg">
         <DialogHeader>
           <DialogTitle>
-            {mode === "create" ? "Create your channel" : "Edit your channel"}
+            {mode === "create"
+              ? "Create your channel"
+              : "Edit your channel"}
           </DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handlesubmit} className="space-y-6">
-          {/* Channel Name */}
+          {/* ✅ Channel Name */}
           <div className="space-y-2">
             <Label htmlFor="name">Channel Name</Label>
             <Input
@@ -83,9 +126,12 @@ const Channeldialogue = ({ isopen, onclose, channeldata, mode }: any) => {
               name="name"
               value={formData.name}
               onChange={handleChange}
+              placeholder="Enter channel name"
+              required
             />
           </div>
-          {/* Channel Description */}
+
+          {/* ✅ Channel Description */}
           <div className="space-y-2">
             <Label htmlFor="description">Channel Description</Label>
             <Textarea
@@ -98,10 +144,17 @@ const Channeldialogue = ({ isopen, onclose, channeldata, mode }: any) => {
             />
           </div>
 
+          {/* ✅ Footer Buttons */}
           <DialogFooter className="flex justify-between sm:justify-between">
-            <Button type="button" variant="outline" onClick={onclose}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onclose}
+              disabled={isSubmitting}
+            >
               Cancel
             </Button>
+
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting
                 ? "Saving..."

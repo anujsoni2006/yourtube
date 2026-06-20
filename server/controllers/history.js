@@ -17,6 +17,7 @@ export const handleview = async (req, res) => {
   const { videoId } = req.params;
   try {
     await video.findByIdAndUpdate(videoId, { $inc: { views: 1 } });
+    return res.status(200).json({ message: "View incremented" });
   } catch (error) {
     console.error(" error:", error);
     return res.status(500).json({ message: "Something went wrong" });
@@ -33,6 +34,17 @@ export const getallhistoryVideo = async (req, res) => {
       })
       .exec();
     return res.status(200).json(historyvideo);
+  } catch (error) {
+    console.error(" error:", error);
+    return res.status(500).json({ message: "Something went wrong" });
+  }
+};
+
+export const deleteHistory = async (req, res) => {
+  const { historyId } = req.params;
+  try {
+    await history.findByIdAndDelete(historyId);
+    return res.status(200).json({ message: "History item deleted" });
   } catch (error) {
     console.error(" error:", error);
     return res.status(500).json({ message: "Something went wrong" });

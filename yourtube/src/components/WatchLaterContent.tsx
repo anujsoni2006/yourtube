@@ -43,12 +43,13 @@ export default function WatchLaterContent() {
   if (loading) {
     return <div>Loading watch later...</div>;
   }
-  const handleRemoveFromWatchLater = async (watchLaterId: string) => {
+  const handleRemoveFromWatchLater = async (videoId: string, watchLaterId: string) => {
     try {
-      console.log("Removing from history:", watchLaterId);
+      console.log("Removing from watch later:", watchLaterId);
+      await axiosInstance.post(`/watch/${videoId}`, { userId: user?._id });
       setWatchLater(watchLater.filter((item) => item._id !== watchLaterId));
     } catch (error) {
-      console.error("Error removing from history:", error);
+      console.error("Error removing from watch later:", error);
     }
   };
 
@@ -75,7 +76,7 @@ export default function WatchLaterContent() {
       </div>
     );
   }
-  const videos = "/video/vdo.mp4";
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
@@ -92,7 +93,7 @@ export default function WatchLaterContent() {
             <Link href={`/watch/${item.videoid._id}`} className="flex-shrink-0">
               <div className="relative w-40 aspect-video bg-gray-100 rounded overflow-hidden">
                 <video
-                  src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/${item.videoid?.videoUrl}`}
+                  src={item.videoid?.videoUrl?.startsWith("http") ? item.videoid.videoUrl : `${process.env.NEXT_PUBLIC_BACKEND_URL}/${item.videoid?.videoUrl}`}
                   className="object-cover group-hover:scale-105 transition-transform duration-200"
                 />
               </div>
@@ -104,9 +105,7 @@ export default function WatchLaterContent() {
                   {item.videoid.videotitle}
                 </h3>
               </Link>
-              <p className="text-sm text-gray-600">
-                {item.videoid.videochanel}
-              </p>
+              <p className="text-sm text-gray-600">{item.videoid.uploader}</p>
               <p className="text-sm text-gray-600">
                 {item.videoid.views.toLocaleString()} views •{" "}
                 {formatDistanceToNow(new Date(item.videoid.createdAt))} ago
@@ -128,7 +127,7 @@ export default function WatchLaterContent() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem
-                  onClick={() => handleRemoveFromWatchLater(item._id)}
+                  onClick={() => handleRemoveFromWatchLater(item.videoid._id, item._id)}
                 >
                   <X className="w-4 h-4 mr-2" />
                   Remove from Watch later

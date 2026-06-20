@@ -15,7 +15,7 @@ const historyschema = mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 export default mongoose.model("history", historyschema);

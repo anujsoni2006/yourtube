@@ -6,12 +6,13 @@ interface RelatedVideosProps {
   videos: Array<{
     _id: string;
     videotitle: string;
-    videochanel: string;
+    uploader: string;
     views: number;
     createdAt: string;
+    videoUrl: string;
   }>;
 }
-const vid = "/video/vdo.mp4";
+
 export default function RelatedVideos({ videos }: RelatedVideosProps) {
   return (
     <div className="space-y-2">
@@ -23,7 +24,7 @@ export default function RelatedVideos({ videos }: RelatedVideosProps) {
         >
           <div className="relative w-40 aspect-video bg-gray-100 rounded overflow-hidden flex-shrink-0">
             <video
-              src={vid}
+              src={video.videoUrl?.startsWith("http") ? video.videoUrl : `${process.env.NEXT_PUBLIC_BACKEND_URL}/${video.videoUrl}`}
               className="object-cover group-hover:scale-105 transition-transform duration-200"
             />
           </div>
@@ -31,7 +32,7 @@ export default function RelatedVideos({ videos }: RelatedVideosProps) {
             <h3 className="font-medium text-sm line-clamp-2 group-hover:text-blue-600">
               {video.videotitle}
             </h3>
-            <p className="text-xs text-gray-600 mt-1">{video.videochanel}</p>
+            <p className="text-xs text-gray-600 mt-1">{video.uploader}</p>
             <p className="text-xs text-gray-600">
               {video.views.toLocaleString()} views •{" "}
               {formatDistanceToNow(new Date(video.createdAt))} ago

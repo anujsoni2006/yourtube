@@ -8,7 +8,7 @@ import axiosInstance from "@/lib/axiosinstance";
 interface Comment {
   _id: string;
   videoid: string;
-  userid: string;
+  userid: string | { _id: string; image?: string; name?: string };
   commentbody: string;
   usercommented: string;
   commentedon: string;
@@ -21,24 +21,6 @@ const Comments = ({ videoId }: any) => {
   const [editText, setEditText] = useState("");
   const { user } = useUser();
   const [loading, setLoading] = useState(true);
-  const fetchedComments = [
-    {
-      _id: "1",
-      videoid: videoId,
-      userid: "1",
-      commentbody: "Great video! Really enjoyed watching this.",
-      usercommented: "John Doe",
-      commentedon: new Date(Date.now() - 3600000).toISOString(),
-    },
-    {
-      _id: "2",
-      videoid: videoId,
-      userid: "2",
-      commentbody: "Thanks for sharing this amazing content!",
-      usercommented: "Jane Smith",
-      commentedon: new Date(Date.now() - 7200000).toISOString(),
-    },
-  ];
   useEffect(() => {
     loadComments();
   }, [videoId]);
@@ -54,7 +36,7 @@ const Comments = ({ videoId }: any) => {
     }
   };
   if (loading) {
-    return <div>Loading history...</div>;
+    return <div>Loading comments...</div>;
   }
   const handleSubmitComment = async () => {
     if (!user || !newComment.trim()) return;
@@ -67,16 +49,8 @@ const Comments = ({ videoId }: any) => {
         commentbody: newComment,
         usercommented: user.name,
       });
-      if (res.data.comment) {
-        const newCommentObj: Comment = {
-          _id: Date.now().toString(),
-          videoid: videoId,
-          userid: user._id,
-          commentbody: newComment,
-          usercommented: user.name || "Anonymous",
-          commentedon: new Date().toISOString(),
-        };
-        setComments([newCommentObj, ...comments]);
+      if (res.data) {
+        setComments([res.data, ...comments]);
       }
       setNewComment("");
     } catch (error) {
@@ -163,64 +137,71 @@ const Comments = ({ videoId }: any) => {
             No comments yet. Be the first to comment!
           </p>
         ) : (
-          comments.map((comment) => (
-            <div key={comment._id} className="flex gap-4">
-              <Avatar className="w-10 h-10">
-                <AvatarImage src="/placeholder.svg?height=40&width=40" />
-                <AvatarFallback>{comment.usercommented[0]}</AvatarFallback>
-              </Avatar>
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="font-medium text-sm">
-                    {comment.usercommented}
-                  </span>
-                  <span className="text-xs text-gray-600">
-                    {formatDistanceToNow(new Date(comment.commentedon))} ago
-                  </span>
-                </div>
+          comments.map((comment) => {
+            const commentUserId = typeof comment.userid === "object" ? comment.userid?._id : comment.userid;
+            const commentUserImage = typeof comment.userid === "object" ? comment.userid?.image : null;
+            const isCommentOwner = commentUserId === user?._id;
+            const avatarUrl = isCommentOwner ? (user?.image || commentUserImage) : commentUserImage;
 
-                {editingCommentId === comment._id ? (
-                  <div className="space-y-2">
-                    <Textarea
-                      value={editText}
-                      onChange={(e) => setEditText(e.target.value)}
-                    />
-                    <div className="flex gap-2 justify-end">
-                      <Button
-                        onClick={handleUpdateComment}
-                        disabled={!editText.trim()}
-                      >
-                        Save
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        onClick={() => {
-                          setEditingCommentId(null);
-                          setEditText("");
-                        }}
-                      >
-                        Cancel
-                      </Button>
-                    </div>
+            return (
+              <div key={comment._id} className="flex gap-4">
+                <Avatar className="w-10 h-10">
+                  {avatarUrl && <AvatarImage src={avatarUrl} />}
+                  <AvatarFallback>{comment.usercommented?.[0] || "U"}</AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="font-medium text-sm">
+                      {comment.usercommented}
+                    </span>
+                    <span className="text-xs text-gray-600">
+                      {formatDistanceToNow(new Date(comment.commentedon))} ago
+                    </span>
                   </div>
-                ) : (
-                  <>
-                    <p className="text-sm">{comment.commentbody}</p>
-                    {comment.userid === user?._id && (
-                      <div className="flex gap-2 mt-2 text-sm text-gray-500">
-                        <button onClick={() => handleEdit(comment)}>
-                          Edit
-                        </button>
-                        <button onClick={() => handleDelete(comment._id)}>
-                          Delete
-                        </button>
+
+                  {editingCommentId === comment._id ? (
+                    <div className="space-y-2">
+                      <Textarea
+                        value={editText}
+                        onChange={(e) => setEditText(e.target.value)}
+                      />
+                      <div className="flex gap-2 justify-end">
+                        <Button
+                          onClick={handleUpdateComment}
+                          disabled={!editText.trim()}
+                        >
+                          Save
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          onClick={() => {
+                            setEditingCommentId(null);
+                            setEditText("");
+                          }}
+                        >
+                          Cancel
+                        </Button>
                       </div>
-                    )}
-                  </>
-                )}
+                    </div>
+                  ) : (
+                    <>
+                      <p className="text-sm">{comment.commentbody}</p>
+                      {isCommentOwner && (
+                        <div className="flex gap-2 mt-2 text-sm text-gray-500">
+                          <button onClick={() => handleEdit(comment)}>
+                            Edit
+                          </button>
+                          <button onClick={() => handleDelete(comment._id)}>
+                            Delete
+                          </button>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </div>

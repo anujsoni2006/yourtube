@@ -44,7 +44,8 @@ export default function LikedVideosContent() {
     if (!user) return;
 
     try {
-      console.log("Unliking video:", videoId, "for user:", user.id);
+      console.log("Unliking video:", videoId, "for user:", user._id);
+      await axiosInstance.post(`/like/${videoId}`, { userId: user?._id });
       setLikedVideos(likedVideos.filter((item) => item._id !== likedVideoId));
     } catch (error) {
       console.error("Error unliking video:", error);
@@ -76,7 +77,7 @@ export default function LikedVideosContent() {
       </div>
     );
   }
-  const videos = "/video/vdo.mp4";
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
@@ -93,7 +94,7 @@ export default function LikedVideosContent() {
             <Link href={`/watch/${item.videoid._id}`} className="flex-shrink-0">
               <div className="relative w-40 aspect-video bg-gray-100 rounded overflow-hidden">
                 <video
-                  src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/${item.videoid?.videoUrl}`}
+                  src={item.videoid?.videoUrl?.startsWith("http") ? item.videoid.videoUrl : `${process.env.NEXT_PUBLIC_BACKEND_URL}/${item.videoid?.videoUrl}`}
                   className="object-cover group-hover:scale-105 transition-transform duration-200"
                 />
               </div>
@@ -105,9 +106,7 @@ export default function LikedVideosContent() {
                   {item.videoid.videotitle}
                 </h3>
               </Link>
-              <p className="text-sm text-gray-600">
-                {item.videoid.videochanel}
-              </p>
+              <p className="text-sm text-gray-600">{item.videoid.uploader}</p>
               <p className="text-sm text-gray-600">
                 {item.videoid.views.toLocaleString()} views •{" "}
                 {formatDistanceToNow(new Date(item.videoid.createdAt))} ago
