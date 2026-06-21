@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import users from "../Modals/Auth.js";
+import users from "../Modals/auth.js";
 
 // LOGIN / SIGNUP
 export const login = async (req, res) => {
